@@ -24,7 +24,31 @@ sample_agent = LlmAgent(
 chat_agent = ADKAgent(adk_agent=sample_agent)
 ```
 
-### 2. Shared State with ToolContext
+### 2. FastAPI Integration & Discovery
+ADK agents are integrated via `add_adk_fastapi_endpoint`. If using them with `CopilotKitRemoteEndpoint`, a monkey-patch is required for discovery.
+
+```python
+from ag_ui_adk import ADKAgent, add_adk_fastapi_endpoint
+
+# CRITICAL: Monkey-patch for agent discovery (SDK v0.1.78)
+def universal_dict_repr(self):
+    adk = getattr(self, "adk_agent", getattr(self, "_adk_agent", None))
+    name = getattr(adk, "name", "unknown") if adk else "unknown"
+    return {
+        "id": name,
+        "name": name,
+        "description": getattr(adk, "description", "") if adk else "",
+        "type": "agent",
+    }
+
+if not hasattr(ADKAgent, "dict_repr"):
+    ADKAgent.dict_repr = universal_dict_repr
+
+# Integrate directly or as a sub-agent
+add_adk_fastapi_endpoint(app, adk_agent, prefix="/adk")
+```
+
+### 3. Shared State with ToolContext
 Manage data between the agent and the frontend using `tool_context.state`.
 
 ```python

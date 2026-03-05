@@ -3,18 +3,24 @@ services:
     build: ./backend
     ports:
       - "8000:8000"
-    environment:
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    env_file:
+      - ./backend/.env
     volumes:
       - ./backend:/app
+      - /app/.venv
     restart: always
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      target: development
     ports:
       - "3000:3000"
     environment:
       - BACKEND_URL=http://backend:8000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     depends_on:
       - backend
     restart: always

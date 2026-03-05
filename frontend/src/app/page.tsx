@@ -55,7 +55,7 @@ export default function Home() {
           key={activeAgent}
           runtimeUrl={`/api/copilotkit/${activeAgent}`}
           showDevConsole={false}
-          agent={activeAgent === "research" ? "research_assistant" : "travel_planner"}
+          agent={activeAgent}
         >
           <ChatInterface agentType={activeAgent} />
         </CopilotKit>

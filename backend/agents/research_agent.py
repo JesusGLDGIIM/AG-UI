@@ -95,7 +95,7 @@ def get_weather(location: str) -> str:
 memory = MemorySaver()
 
 graph = create_agent(
-    model="google_genai:gemini-2.0-flash",
+    model="google_genai:gemini-3-flash-preview",
     tools=[search_web, get_weather],
     middleware=[CopilotKitMiddleware()],
     system_prompt=(

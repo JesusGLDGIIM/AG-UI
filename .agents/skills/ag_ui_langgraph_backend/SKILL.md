@@ -26,7 +26,33 @@ workflow = StateGraph(AgentState)
 graph = workflow.compile(middleware=[CopilotKitMiddleware()])
 ```
 
-### 2. Predictive State (Streaming)
+### 2. FastAPI Integration & Discovery
+The `LangGraphAGUIAgent` must be integrated using `add_fastapi_endpoint`. Due to current SDK bugs, a monkey-patch is required for discovery.
+
+```python
+from copilotkit import LangGraphAGUIAgent
+from copilotkit.integrations.fastapi import add_fastapi_endpoint
+
+# CRITICAL: Monkey-patch for agent discovery (SDK v0.1.78)
+# Required for compatibility with Frontend v1.52.1+
+def universal_dict_repr(self):
+    name = getattr(self, "name", "unknown")
+    return {
+        "id": name,
+        "name": name,
+        "description": getattr(self, "description", ""),
+        "type": "agent", # 'agent' is more portable than 'langgraph'
+    }
+
+if not hasattr(LangGraphAGUIAgent, "dict_repr"):
+    LangGraphAGUIAgent.dict_repr = universal_dict_repr
+
+# ... define endpoint and add to app
+copilotkit_endpoint = CopilotKitRemoteEndpoint(agents=[...])
+add_fastapi_endpoint(app, copilotkit_endpoint, prefix="/copilotkit")
+```
+
+### 3. Predictive State (Streaming)
 Enable streaming of tool arguments to the frontend state using `predict_state` metadata. This allows the UI to update *while* the LLM is generating the tool call.
 
 ```python

@@ -1,33 +1,28 @@
-# Stage 1: Build
-FROM node:20-alpine AS builder
-
+# Base stage for dependencies
+FROM node:20-alpine AS base
 WORKDIR /app
-
-# Copy package files
 COPY package*.json ./
-
-# Install dependencies
 RUN npm install
 
-# Copy source code
+# Development stage
+FROM base AS development
+WORKDIR /app
 COPY . .
+EXPOSE 3000
+CMD ["npm", "run", "dev"]
 
-# Build the application
+# Build stage
+FROM base AS builder
+WORKDIR /app
+COPY . .
 RUN npm run build
 
-# Stage 2: Production
+# Production runner stage
 FROM node:20-alpine AS runner
-
 WORKDIR /app
-
-# Copy necessary files from builder
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/node_modules ./node_modules
-
-# Expose port
 EXPOSE 3000
-
-# Run the app
 CMD ["npm", "start"]

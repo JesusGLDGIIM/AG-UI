@@ -103,3 +103,25 @@ useLangGraphInterrupt({
 - **Real-time Feedback**: Use the `status` prop in `render` functions to show progress (streaming vs. complete).
 - **Responsive Design**: Ensure custom cards look good on all devices.
 - **Type Safety**: Use Zod for parameter definitions.
+
+### 6. Next.js Catch-all Proxy & Protocol Translation (Crucial)
+When proxying to a CopilotKit backend, use a catch-all route to handle subpaths like `/info`. 
+
+**Critical Version Note:** 
+If using **Frontend v1.52.1+** with **Python Backend v0.x**, you MUST perform a protocol translation in the proxy. The backend returns an `agents` array, but the frontend expects an object/map.
+
+```tsx
+// src/app/api/copilotkit/[id]/[[...path]]/route.ts
+let data = await response.json();
+
+// Protocol Translation (v0 Backend -> v1 Frontend)
+if (data && Array.isArray(data.agents)) {
+    const agentsMap: Record<string, any> = {};
+    data.agents.forEach((agent: any) => {
+        const id = agent.id || agent.name || "unknown";
+        agentsMap[id] = agent;
+    });
+    data.agents = agentsMap;
+}
+return NextResponse.json(data);
+```

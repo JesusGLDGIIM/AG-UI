@@ -114,8 +114,8 @@ def book_trip(destination: str, dates: str, travelers: int) -> str:
 # --- Create ADK Agent ---
 
 travel_llm_agent = LlmAgent(
-    name="travel_planner",
-    model="gemini-2.0-flash",
+    name="travel",
+    model="google_genai:gemini-3-flash-preview",
     description="A helpful travel planning assistant that helps users discover destinations, check weather, and book trips.",
     instruction=(
         "You are a friendly and knowledgeable Travel Planner assistant. "
