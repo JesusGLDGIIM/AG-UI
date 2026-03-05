@@ -5,6 +5,15 @@ FastAPI server that exposes both agents via CopilotKit / AG-UI protocol.
 """
 
 import os
+import sys
+
+# Ensure we use the .venv site-packages
+# This is a workaround for issues with the OCI runtime not activating the venv properly
+venv_path = "/app/.venv/lib/python3.12/site-packages"
+if os.path.exists(venv_path) and venv_path not in sys.path:
+    sys.path.insert(0, venv_path)
+    print(f"DEBUG: Prepended {venv_path} to sys.path")
+
 import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI
@@ -15,6 +24,7 @@ import warnings
 from copilotkit.integrations.fastapi import add_fastapi_endpoint
 from copilotkit import CopilotKitRemoteEndpoint, LangGraphAGUIAgent
 from ag_ui_adk import ADKAgent, add_adk_fastapi_endpoint
+from ag_ui_langgraph import add_langgraph_fastapi_endpoint
 
 # Silence experimental warnings from ag_ui_adk and google-adk
 warnings.filterwarnings("ignore", category=UserWarning, message=".*EXPERIMENTAL.*")
@@ -98,8 +108,12 @@ copilotkit_endpoint = CopilotKitRemoteEndpoint(
     ],
 )
 
-# Add the CopilotKit endpoint to the FastAPI app
+# Add the CopilotKit endpoint to the FastAPI app for DISCOVERY ONLY (/copilotkit/info)
 add_fastapi_endpoint(app, copilotkit_endpoint, prefix="/copilotkit")
+
+# --- Native AG-UI Endpoints for EXECUTION ---
+add_langgraph_fastapi_endpoint(app, research_assistant, path="/research")
+add_adk_fastapi_endpoint(app, travel_agent, path="/travel")
 
 
 # --- Run Server ---

@@ -12,50 +12,62 @@ import { z } from "zod";
 import { CopilotKit } from "@copilotkit/react-core";
 import "./globals.css";
 
+// Import Google Fonts (Inter)
+import "@fontsource/inter/400.css";
+import "@fontsource/inter/600.css";
+import "@fontsource/inter/800.css";
+
 type AgentType = "research" | "travel";
 
 export default function Home() {
   const [activeAgent, setActiveAgent] = useState<AgentType>("research");
 
   return (
-    <div className="app-container">
-      {/* Agent Selector Header */}
+    <div className={`app-container ${activeAgent}-theme`}>
+      {/* Premium Header */}
       <header className="app-header">
         <div className="header-content">
-          <h1 className="app-title">
-            <span className="emoji">🤖</span> AG-UI & A2UI Demo
-          </h1>
-          <p className="app-subtitle">
-            Demonstrating AG-UI and A2UI protocols with LangGraph & ADK agents
-          </p>
+          <div className="brand">
+            <h1 className="app-title">
+              <span className="emoji">✨</span> AG-UI Nexus
+            </h1>
+            <p className="app-subtitle">
+              Advanced Agentic Interface • LangGraph & Google ADK
+            </p>
+          </div>
+
           <div className="agent-selector">
             <button
-              className={`agent-btn ${activeAgent === "research" ? "active research-active" : ""}`}
+              className={`agent-btn research-active ${activeAgent === "research" ? "active" : ""}`}
               onClick={() => setActiveAgent("research")}
             >
               <span className="agent-icon">🔬</span>
-              <span className="agent-label">Research Assistant</span>
-              <span className="agent-tech">LangGraph + AG-UI</span>
+              <div className="agent-info">
+                <span className="agent-label">Research</span>
+                <span className="agent-tech">LangGraph</span>
+              </div>
             </button>
             <button
-              className={`agent-btn ${activeAgent === "travel" ? "active travel-active" : ""}`}
+              className={`agent-btn travel-active ${activeAgent === "travel" ? "active" : ""}`}
               onClick={() => setActiveAgent("travel")}
             >
               <span className="agent-icon">✈️</span>
-              <span className="agent-label">Travel Planner</span>
-              <span className="agent-tech">ADK + A2UI</span>
+              <div className="agent-info">
+                <span className="agent-label">Travel</span>
+                <span className="agent-tech">ADK</span>
+              </div>
             </button>
           </div>
         </div>
       </header>
 
-      {/* Chat Area - re-mount on agent change */}
+      {/* Main Experience Area */}
       <main className="chat-area">
         <CopilotKit
           key={activeAgent}
           runtimeUrl={`/api/copilotkit/${activeAgent}`}
           showDevConsole={false}
-          agent={activeAgent}
+          agent={activeAgent === "travel" ? "travel" : "research"}
         >
           <ChatInterface agentType={activeAgent} />
         </CopilotKit>
@@ -142,10 +154,10 @@ function ChatInterface({ agentType }: { agentType: AgentType }) {
     render: ({ args, result, status }: any) => {
       if (status !== "complete") {
         return (
-          <div className="weather-card loading">
+          <div className="destination-card loading">
             <div className="weather-loading">
               <span className="spinner"></span>
-              Finding best destinations in {args.region}...
+              Exploring {args.region}...
             </div>
           </div>
         );
@@ -153,14 +165,16 @@ function ChatInterface({ agentType }: { agentType: AgentType }) {
       const data = typeof result === "string" ? JSON.parse(result) : result;
       return (
         <div className="destinations-container">
-          <h3 className="section-title">🌟 Top Picks for {data?.region}</h3>
+          <h4 style={{ marginBottom: "1rem", color: "var(--text-muted)" }}>
+            Popular Picks in {data?.region || args.region}
+          </h4>
           <div className="destinations-grid">
             {data?.destinations?.map((dest: any, i: number) => (
               <div key={i} className="destination-card">
-                <div className="dest-name">{dest.name}</div>
-                <div className="dest-rating">⭐ {dest.rating} • {dest.price_range}</div>
+                <span className="dest-name">{dest.name}</span>
+                <span className="stat-label">Rating: {dest.rating} ⭐</span>
                 <ul className="dest-highlights">
-                  {dest.highlights.map((h: string, j: number) => (
+                  {dest.highlights?.map((h: string, j: number) => (
                     <li key={j}>{h}</li>
                   ))}
                 </ul>
@@ -172,7 +186,7 @@ function ChatInterface({ agentType }: { agentType: AgentType }) {
     },
   });
 
-  // Render tool: booking confirmation
+  // Render tool: book trip
   useRenderTool({
     name: "book_trip",
     parameters: z.object({
@@ -186,7 +200,7 @@ function ChatInterface({ agentType }: { agentType: AgentType }) {
           <div className="booking-conf loading">
             <div className="weather-loading">
               <span className="spinner"></span>
-              Confirming your booking to {args.destination}...
+              Securing your booking for {args.destination}...
             </div>
           </div>
         );
@@ -194,31 +208,27 @@ function ChatInterface({ agentType }: { agentType: AgentType }) {
       const data = typeof result === "string" ? JSON.parse(result) : result;
       return (
         <div className="booking-conf">
-          <div className="conf-header">
-            <span className="weather-icon">✅</span>
-            <h3>Booking Confirmed!</h3>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem" }}>
+            <h3 style={{ color: "#4ade80" }}>Booking Confirmed! ✅</h3>
+            <span className="stat-label">#{data?.booking_id}</span>
           </div>
           <div className="conf-details">
             <div className="conf-row">
-              <span className="stat-label">Booking ID</span>
-              <span className="stat-value">{data.booking_id}</span>
-            </div>
-            <div className="conf-row">
               <span className="stat-label">Destination</span>
-              <span className="stat-value">{data.destination}</span>
+              <span className="stat-value">{data?.destination || args.destination}</span>
             </div>
             <div className="conf-row">
               <span className="stat-label">Dates</span>
-              <span className="stat-value">{data.dates}</span>
+              <span className="stat-value">{data?.dates || args.dates}</span>
             </div>
             <div className="conf-row">
               <span className="stat-label">Travelers</span>
-              <span className="stat-value">{data.travelers}</span>
+              <span className="stat-value">{data?.travelers || args.travelers}</span>
             </div>
-            <div className="conf-row">
-              <span className="stat-label">Total Price</span>
-              <span className="stat-value" style={{ color: "#4ade80", fontWeight: "bold" }}>
-                {data.currency} {data.total_price.toLocaleString()}
+            <div className="conf-row" style={{ marginTop: "0.5rem", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "0.5rem" }}>
+              <span className="stat-label">Total Paid ({data?.currency})</span>
+              <span className="stat-value" style={{ color: "#4ade80", fontSize: "1.2rem" }}>
+                ${data?.total_price}
               </span>
             </div>
           </div>

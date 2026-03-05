@@ -26,30 +26,46 @@ workflow = StateGraph(AgentState)
 graph = workflow.compile(middleware=[CopilotKitMiddleware()])
 ```
 
-### 2. FastAPI Integration & Discovery
-The `LangGraphAGUIAgent` must be integrated using `add_fastapi_endpoint`. Due to current SDK bugs, a monkey-patch is required for discovery.
+### 2. FastAPI Integration: Split-Routing (Discovery vs Execution)
+In AG-UI setups matching Frontend v1.50+ with Python Backend v0.x, you **MUST** split the API routes:
+1.  **Discovery (Info):** Use the standard `CopilotKitRemoteEndpoint`.
+2.  **Execution (Run):** Use the native AG-UI ASGI endpoints (`add_langgraph_fastapi_endpoint`). The frontend proxy must route here directly because `LangGraphAGUIAgent` implements `.run()` instead of `.execute()`.
 
 ```python
-from copilotkit import LangGraphAGUIAgent
+from copilotkit import LangGraphAGUIAgent, CopilotKitRemoteEndpoint
 from copilotkit.integrations.fastapi import add_fastapi_endpoint
+from ag_ui_langgraph import add_langgraph_fastapi_endpoint
+import fastapi
+
+app = fastapi.FastAPI()
+
+# 1. Initialize the agent
+research_assistant = LangGraphAGUIAgent(
+    name="research",
+    description="A research assistant",
+    graph=graph,
+)
 
 # CRITICAL: Monkey-patch for agent discovery (SDK v0.1.78)
-# Required for compatibility with Frontend v1.52.1+
+# Required for compatibility with Frontend v1.52.1+ so discovery doesn't crash
 def universal_dict_repr(self):
     name = getattr(self, "name", "unknown")
     return {
         "id": name,
         "name": name,
         "description": getattr(self, "description", ""),
-        "type": "agent", # 'agent' is more portable than 'langgraph'
+        "type": "agent", 
     }
 
 if not hasattr(LangGraphAGUIAgent, "dict_repr"):
     LangGraphAGUIAgent.dict_repr = universal_dict_repr
 
-# ... define endpoint and add to app
-copilotkit_endpoint = CopilotKitRemoteEndpoint(agents=[...])
+# 2. DISCOVERY ROUTE: Add CopilotKit endpoint purely for /info handshakes
+copilotkit_endpoint = CopilotKitRemoteEndpoint(agents=[research_assistant])
 add_fastapi_endpoint(app, copilotkit_endpoint, prefix="/copilotkit")
+
+# 3. EXECUTION ROUTE: Mount the native ASGI run engine
+add_langgraph_fastapi_endpoint(app, research_assistant, path="/research")
 ```
 
 ### 3. Predictive State (Streaming)

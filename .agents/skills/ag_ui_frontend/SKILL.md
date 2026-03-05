@@ -112,9 +112,52 @@ If using **Frontend v1.52.1+** with **Python Backend v0.x**, you MUST perform a 
 
 ```tsx
 // src/app/api/copilotkit/[id]/[[...path]]/route.ts
-let data = await response.json();
 
-// Protocol Translation (v0 Backend -> v1 Frontend)
+// ... inside the main POST handler ...
+const bodyText = await req.text();
+const parsedBody = JSON.parse(bodyText);
+const methodType = parsedBody.method;
+
+// 1. EXECUTION TRANSLATION (v1 -> AG-UI Native)
+if (methodType === "agent/run" || methodType === "agent/execute" || methodType === "agent/connect") {
+    const innerBody = parsedBody.body || {};
+    const threadId = innerBody.threadId || "unknown";
+    const runId = innerBody.runId || "unknown";
+
+    // 2. CRASH PREVENTION: Intercept 'connect' / empty messages
+    // If sent to the backend, the LLM will crash with "contents are required"
+    if (methodType === "agent/connect" || (Array.isArray(innerBody.messages) && innerBody.messages.length === 0)) {
+        const encoder = new TextEncoder();
+        const stream = new ReadableStream({
+            start(controller) {
+                controller.enqueue(encoder.encode(`data: {"type":"RUN_STARTED","threadId":"${threadId}","runId":"${runId}"}\n\n`));
+                controller.enqueue(encoder.encode(`data: {"type":"RUN_FINISHED","threadId":"${threadId}","runId":"${runId}"}\n\n`));
+                controller.close();
+            }
+        });
+        return new NextResponse(stream, {
+            status: 200,
+            headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache" },
+        });
+    }
+
+    // 3. ROUTE TO NATIVE AG-UI ENDPOINT (e.g., /research)
+    const agentId = parsedBody.params?.agentId;
+    const finalBackendUrl = `${BACKEND_URL}/${agentId}`;
+    
+    // Send the unwrapped `RunAgentInput` (innerBody) directly
+    const response = await fetch(finalBackendUrl, {
+        method: "POST",
+        headers: { "content-type": "application/json" }, // Strip original content-length
+        body: JSON.stringify(innerBody), 
+    });
+    
+    // Pipe the text/event-stream response back...
+    return new NextResponse(response.body, { /* headers */ });
+}
+
+// 4. DISCOVERY TRANSLATION (v0 Backend -> v1 Frontend)
+let data = await response.json();
 if (data && Array.isArray(data.agents)) {
     const agentsMap: Record<string, any> = {};
     data.agents.forEach((agent: any) => {

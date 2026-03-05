@@ -98,41 +98,38 @@ body {
 }
 
 .agent-btn:hover {
-  background: rgba(30, 41, 59, 0.8);
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
+  color: white;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .agent-btn.active {
-  background: var(--card-bg);
-  border-color: var(--primary);
-  color: #fff;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(99, 102, 241, 0.3);
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-.research-active.active {
-  border-color: #6366f1;
+.agent-btn.research-active.active {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
+  border: 1px solid rgba(99, 102, 241, 0.3);
 }
 
-.travel-active.active {
-  border-color: #ec4899;
-}
-
-.agent-icon {
-  font-size: 1.5rem;
-  margin-bottom: 0.25rem;
-}
-
-.agent-label {
-  font-weight: 600;
-  font-size: 1rem;
+.agent-btn.travel-active.active {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.2), rgba(34, 211, 238, 0.2));
+  border: 1px solid rgba(14, 165, 233, 0.3);
 }
 
 .agent-tech {
-  font-size: 0.75rem;
-  opacity: 0.6;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  opacity: 0.9;
+  /* Increased brightness for accessibility */
+  font-weight: 600;
+  color: #a5b4fc;
+  /* Tinted to match primary */
 }
 
+/* --- Chat Area --- */
 .chat-area {
   flex: 1;
   display: flex;
@@ -143,45 +140,199 @@ body {
 .chat-wrapper {
   flex: 1;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
   padding: 2rem;
-  transition: background 0.5s ease;
-  height: 100%;
-  width: 100%;
+  transition: background 1s ease;
 }
 
+/* --- CopilotKit Overrides --- */
 .copilot-chat {
+  max-width: 1000px;
   width: 100%;
-  max-width: 1100px;
-  height: 100% !important;
+  margin: 0 auto;
   border-radius: 24px !important;
-  overflow: hidden;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
-  background: var(--card-bg) !important;
-  backdrop-filter: blur(16px) !important;
   border: 1px solid var(--card-border) !important;
+  background: var(--card-bg) !important;
+  backdrop-filter: blur(20px) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+  overflow: hidden;
+  display: flex !important;
+  flex-direction: column !important;
 }
 
-/* Custom Component Styles */
-.weather-card {
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
-  border: 1px solid rgba(56, 189, 248, 0.2);
+/* Fix the broken white background area */
+.copilot-chat [class*="cpk-chat-container"],
+.copilot-chat [class*="cpk-message-list"],
+.copilot-chat .copilot-kit-chat-window,
+.copilot-chat .copilot-kit-chat-messages {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* Custom Scrollbar */
+.copilot-chat *::-webkit-scrollbar {
+  width: 6px;
+}
+
+.copilot-chat *::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.copilot-chat *::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.copilot-chat *::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Message Alignment & Bubbles */
+.copilot-chat [class*="cpk-message-list"] {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1.5rem !important;
+  padding: 2rem !important;
+}
+
+.copilot-chat .cpk-message {
+  max-width: 80% !important;
+  padding: 1rem !important;
+  border-radius: 12px !important;
+  font-size: 1rem !important;
+  line-height: 1.6 !important;
+  position: relative !important;
+}
+
+.copilot-chat .cpk-message-user {
+  align-self: flex-end !important;
+  background: var(--primary) !important;
+  color: white !important;
+  border-bottom-right-radius: 4px !important;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3) !important;
+}
+
+.copilot-chat .cpk-message-assistant {
+  align-self: flex-start !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #e2e8f0 !important;
+  border-bottom-left-radius: 4px !important;
+}
+
+/* Fix the Suggestion Chips positioning */
+.copilot-chat [class*="cpk-suggestions-container"] {
+  margin-top: auto !important;
+  margin-bottom: 0.5rem !important;
+  padding: 1rem 0 !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.75rem !important;
+  justify-content: center !important;
+}
+
+/* Style the Suggestions like the Premium Theme */
+.copilot-chat [class*="cpk-suggestions-container"] button {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #94a3b8 !important;
+  border-radius: 99px !important;
+  padding: 0.5rem 1.25rem !important;
+  font-size: 0.9rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.copilot-chat [class*="cpk-suggestions-container"] button:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+  transform: translateY(-2px);
+}
+
+/* Input Area Fixes */
+.copilot-chat [class*="cpk-chat-input-container"] {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 1.5rem !important;
+  position: relative !important;
+}
+
+/* Remove that annoying white gradient */
+.copilot-chat [class*="cpk-chat-input-gradient"],
+.copilot-chat [class*="linear-gradient"] {
+  display: none !important;
+  background: none !important;
+}
+
+/* Textarea Styling */
+.copilot-chat textarea {
+  background: rgba(30, 41, 59, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+  border-radius: 12px !important;
+  padding: 1rem !important;
+  font-size: 1rem !important;
+  resize: none !important;
+}
+
+.copilot-chat textarea:focus {
+  border-color: var(--primary) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
+}
+
+/* Notification Pill */
+.announcement-preview {
+  background: rgba(30, 41, 59, 0.9) !important;
+  border: 1px solid var(--primary) !important;
+  color: white !important;
+  border-radius: 99px !important;
+  padding: 0.5rem 1rem !important;
+  font-size: 0.8rem !important;
+  backdrop-filter: blur(10px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* --- Custom Cards (Artifacts) --- */
+.weather-card,
+.destination-card,
+.booking-conf {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--glass-border);
   border-radius: 16px;
   padding: 1.25rem;
-  margin: 0.5rem 0;
-  backdrop-filter: blur(8px);
+  margin: 1rem 0;
+  transition: all 0.3s ease;
+  animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .weather-header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 1rem;
   margin-bottom: 1rem;
 }
 
 .weather-icon {
   font-size: 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
 }
 
 .weather-details {
@@ -190,43 +341,30 @@ body {
   gap: 1rem;
 }
 
-.weather-stat {
-  display: flex;
-  flex-direction: column;
-}
-
 .stat-label {
   font-size: 0.75rem;
-  color: #94a3b8;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  display: block;
 }
 
 .stat-value {
+  font-size: 1rem;
   font-weight: 600;
-  font-size: 1.1rem;
+  color: white;
 }
 
-/* Travel Cards */
+/* --- Destinations --- */
 .destinations-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1rem;
-  margin: 1rem 0;
+  margin-top: 1rem;
 }
 
 .destination-card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--card-border);
-  border-radius: 16px;
-  padding: 1rem;
-  transition: all 0.3s ease;
-}
-
-.destination-card:hover {
-  transform: scale(1.02);
-  background: rgba(255, 255, 255, 0.08);
-  border-color: var(--secondary);
+  margin: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .dest-name {
