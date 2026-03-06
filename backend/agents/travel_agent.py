@@ -115,7 +115,7 @@ def book_trip(destination: str, dates: str, travelers: int) -> str:
 
 travel_llm_agent = LlmAgent(
     name="travel",
-    model="google_genai:gemini-3-flash-preview",
+    model="gemini-3-flash-preview",
     description="A helpful travel planning assistant that helps users discover destinations, check weather, and book trips.",
     instruction=(
         "You are a friendly and knowledgeable Travel Planner assistant. "
